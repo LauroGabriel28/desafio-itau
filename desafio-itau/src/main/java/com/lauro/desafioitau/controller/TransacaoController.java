@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.time.OffsetDateTime;
 
@@ -33,5 +34,11 @@ public class TransacaoController {
         service.adicionar(transacao);
 
         return ResponseEntity.status(201).build();
+    }
+
+    @DeleteMapping("/transacao")
+    public ResponseEntity<Void> limpar() {
+        service.limpar();
+        return ResponseEntity.ok().build();
     }
 }

@@ -14,4 +14,7 @@ public class TransacaoService {
     public synchronized void adicionar(Transacao transacao) {
         transacoes.add(transacao);
     }
+    public synchronized void limpar() {
+        transacoes.clear();
+    }
 }
