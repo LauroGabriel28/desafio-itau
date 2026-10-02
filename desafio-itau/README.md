@@ -87,3 +87,30 @@ Se não houver transações nesse intervalo, todos os valores são zero.
 - Cálculo das estatísticas com valores 10 e 20.
 - Retorno de zeros sem transações recentes.
 - Limpeza dos dados pelo DELETE.
+
+## Testes automatizados
+
+Para executar os testes no Windows PowerShell:
+
+```powershell
+.\mvnw.cmd test
+```
+
+Os testes verificam cadastro, validações, JSON inválido, cálculo das
+estatísticas, exclusão de transações antigas das estatísticas e limpeza.
+
+## Gerar o executável
+
+No Windows PowerShell:
+
+```powershell
+.\mvnw.cmd package
+```
+
+O arquivo executável será gerado na pasta target.
+
+Para executar, com a porta 8080 livre:
+
+```powershell
+java -jar target/desafio-itau-0.0.1-SNAPSHOT.jar
+```
