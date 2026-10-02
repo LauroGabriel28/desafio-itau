@@ -119,4 +119,83 @@ public class TransacaoApiTest {
         assertEquals(400, resposta.statusCode());
         assertEquals("", resposta.body());
     }
+    @Test
+    void calculaEstatisticasDeTransacoesRecentes() throws Exception {
+        OffsetDateTime data = OffsetDateTime.now().minusSeconds(5);
+
+        assertEquals(201, cadastrar(transacao(10, data)).statusCode());
+        assertEquals(201, cadastrar(transacao(20, data)).statusCode());
+
+        var estatistica = service.calcularEstatistica();
+
+        assertEquals(2, estatistica.count());
+        assertEquals(30.0, estatistica.sum());
+        assertEquals(15.0, estatistica.avg());
+        assertEquals(10.0, estatistica.min());
+        assertEquals(20.0, estatistica.max());
+    }
+
+    @Test
+    void aceitaTransacaoAntigaMasNaoIncluiNasEstatisticas() throws Exception {
+        var resposta = cadastrar(
+                transacao(100, OffsetDateTime.now().minusMinutes(5))
+        );
+
+        assertEquals(201, resposta.statusCode());
+
+        var estatistica = service.calcularEstatistica();
+
+        assertEquals(0, estatistica.count());
+        assertEquals(0.0, estatistica.sum());
+        assertEquals(0.0, estatistica.avg());
+        assertEquals(0.0, estatistica.min());
+        assertEquals(0.0, estatistica.max());
+    }
+
+    @Test
+    void retornaEstatisticasZeradasSemTransacoes() throws Exception {
+        HttpRequest pedido = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + porta + "/estatistica"))
+                .GET()
+                .build();
+
+        var resposta = cliente.send(
+                pedido, HttpResponse.BodyHandlers.ofString()
+        );
+
+        assertEquals(200, resposta.statusCode());
+        assertEquals(
+                "application/json",
+                resposta.headers().firstValue("Content-Type").orElse("")
+        );
+        assertEquals(
+                "{\"count\":0,\"sum\":0.0,\"avg\":0.0,\"min\":0.0,\"max\":0.0}",
+                resposta.body()
+        );
+    }
+
+    @Test
+    void deleteApagaTransacoes() throws Exception {
+        assertEquals(
+                201,
+                cadastrar(transacao(
+                        50, OffsetDateTime.now().minusSeconds(5)
+                )).statusCode()
+        );
+
+        assertEquals(1, service.calcularEstatistica().count());
+
+        HttpRequest pedido = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + porta + "/transacao"))
+                .DELETE()
+                .build();
+
+        var resposta = cliente.send(
+                pedido, HttpResponse.BodyHandlers.ofString()
+        );
+
+        assertEquals(200, resposta.statusCode());
+        assertEquals("", resposta.body());
+        assertEquals(0, service.calcularEstatistica().count());
+    }
 }
